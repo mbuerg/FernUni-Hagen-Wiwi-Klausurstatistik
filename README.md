@@ -6,4 +6,4 @@ Um zu sehen wie die Verteilungen sind, muss man Buttons drücken und den Modulna
 Entwicklung der Durchschnittsnote in einem Modul muss man umständlich viele Buttons aufklappen, mit Strg+F die Modulnummer suchen und sich die Noten 
 notieren.
 
-Dieses Projekt soll diese Verteilungen in einem Dataframe zusammenfassen und im nächsten Schritt visualisieren.
+Dieses Projekt soll diese Verteilungen in einem Dataframe zusammenfassen (Paneldaten) und im nächsten Schritt visualisieren.

@@ -188,5 +188,5 @@ klausurdaten.sort_values(["Modulnummer", "Jahr", "Semester"], inplace = True)
 klausurdaten["Semester"] = klausurdaten["Semester"] + klausurdaten["Jahr"]
 del klausurdaten ["Jahr"]
 
-print(klausurdaten)
-klausurdaten.to_csv("klausurdaten.csv")
+#print(klausurdaten)
+#klausurdaten.to_csv("klausurdaten.csv")

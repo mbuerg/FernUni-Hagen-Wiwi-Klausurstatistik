@@ -184,5 +184,9 @@ klausurdaten["Semester"] = klausurdaten["Semester"].str.replace(
 
 klausurdaten.sort_values(["Modulnummer", "Jahr", "Semester"], inplace = True)
 
-#print(klausurdaten)
-#klausurdaten.to_csv("klausurdaten.csv")
+# Semesterdaten wieder zusammenfügen
+klausurdaten["Semester"] = klausurdaten["Semester"] + klausurdaten["Jahr"]
+del klausurdaten ["Jahr"]
+
+print(klausurdaten)
+klausurdaten.to_csv("klausurdaten.csv")

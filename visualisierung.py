@@ -14,8 +14,17 @@ from dash import Dash, dcc, html, Input, Output
 
 df = kf.klausurdaten
 
-print(df.groupby(["Modulnummer"]).sum())
-help(html.A)
+def berechne_durchschnitt(x):
+    summen = [(i+1) * x[f"{j}"] for i, j in enumerate(df.iloc[0][4:9].index)]
+    if x["Teilnehmer"] == 0:
+        durchschnitt = 0
+    else:
+        durchschnitt = sum(summen) / x["Teilnehmer"]
+    return durchschnitt
+    
+
+df["durchschnittsnote"] = df.apply(berechne_durchschnitt, axis = 1)
+
 
 # App Layout **************************************************************
 
@@ -28,8 +37,8 @@ app.layout = html.Div(
             html.H1(
                 "Klausurstatistiken FernUni Hagen Wiwi", style = {"textAlign": 
                                                                 "center"}
-            ), className = "row",
-        ),
+                    ), className = "row",
+                ),
         html.Div(
             html.A(
                 id = "my_link_1",
@@ -38,9 +47,8 @@ app.layout = html.Div(
                 "schaft/studium/klausurstatistik.shtml",
                 target = "_blank",
                 style = {"textAlign": "center"},
-            ),
-            className = "row",
-        ),
+                   ), className = "row",
+                ),
         html.Div(dcc.Graph(id = "chart_1", figure = {}), className = "row"),
         html.Div(
             [
@@ -51,11 +59,9 @@ app.layout = html.Div(
                         options = [
                             {"label": x, "value": x}
                             for x in sorted(df["Modulnummer"].unique())
-                        ],
-                        value = ["31001"],
-                    ),
-                    className = "three columns",
-                ),
+                                  ], value = [f"{df['Modulnummer'].min()}"],
+                                ), className = "three columns",
+                        ),
                 html.Div(
                     dcc.Dropdown(
                         id = "dropdown_2",
@@ -63,18 +69,14 @@ app.layout = html.Div(
                         options = [
                             {"label": x, "value": x}
                             for x in sorted(df.columns[3:])
-                        ],
-                        value = "Teilnehmer",
-                    ),
-                    className = "three columns",
-                ),  
-            ],
-            className = "row",
-        ),
+                                  ], value = "Teilnehmer",
+                                ), className = "three columns",
+                        ),  
+            ], className = "row",
+            ),
     ]
 )
 
-#print(df.columns[3:])
     
 # Callbacks ***************************************************************
 @app.callback(
@@ -83,7 +85,6 @@ app.layout = html.Div(
      Input(component_id = "dropdown_2", component_property = "value")],
 )
 def update_graph(chosen_value_1, chosen_value_2):
-    #print(f"Values chosen by user: {chosen_value}")
 
     if len(chosen_value_1) == 0:
         return {}

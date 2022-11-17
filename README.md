@@ -9,6 +9,6 @@ notieren.
 Dieses Projekt soll diese Verteilungen in einem Dataframe zusammenfassen (Paneldaten) und im nächsten Schritt visualisieren.
 
 To Do:
-1. Durchschnittswerte berechenn und visualisieren
+1. Durchschnittswerte berechnen und visualisieren
 2. Histogramme erstellen
 3. Code effizienter machen

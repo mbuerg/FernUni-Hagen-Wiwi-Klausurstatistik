@@ -18,3 +18,4 @@ To Do:
 1. Durchschnittswerte berechnen und visualisieren
 2. Histogramme erstellen
 3. Code effizienter machen
+4. Modulnummer in der Legende durch Modulnamen ersetzen

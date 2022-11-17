@@ -8,6 +8,12 @@ notieren.
 
 Dieses Projekt soll diese Verteilungen in einem Dataframe zusammenfassen (Paneldaten) und im nächsten Schritt visualisieren.
 
+In klausurstatistik.py werden die Daten gezogen und aufbereitet.
+In visualisierung.py werden die Daten noch auf die Visualisierung vorbereitet. Dann wird per Dash ein Dashboard erstellt.
+
+![visualisierung](https://user-images.githubusercontent.com/106337257/202548421-df181949-129d-4ff1-aeca-3e9781c32ad2.PNG)
+
+
 To Do:
 1. Durchschnittswerte berechnen und visualisieren
 2. Histogramme erstellen

@@ -15,7 +15,7 @@ In visualisierung.py werden die Daten noch auf die Visualisierung vorbereitet. D
 
 
 To Do:
-1. Durchschnittswerte berechnen und visualisieren
-2. Histogramme erstellen
-3. Code effizienter machen
-4. Modulnummer in der Legende durch Modulnamen ersetzen
+1. Histogramme erstellen
+2. Code effizienter machen
+3. Modulnummer in der Legende durch Modulnamen ersetzen
+4. 32771 zusammen mit 32721 sind in der Visualisierung verbugged

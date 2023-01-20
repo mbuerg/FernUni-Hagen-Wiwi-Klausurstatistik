@@ -9,7 +9,7 @@ Created on Mon Nov 14 13:15:00 2022
 
 #import plotly.graph_objects as go
 import plotly.express as px
-import klausurstatistik_final as kf
+import klausurstatistik as kf
 from dash import Dash, dcc, html, Input, Output
 
 df = kf.klausurdaten

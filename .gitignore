@@ -1,9 +1,13 @@
 # eigenes
 data/
 
+trash/
+
 src/klausurstatistik.py
 src/visualisierung.py
 src/Scraper.ipynb
+
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

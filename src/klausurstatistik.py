@@ -1,12 +1,12 @@
 # Skript zum Ziehen der Klausurdaten
-
+#%%
 import requests
 import re
 import pandas as pd
 import numpy as np
 from bs4 import BeautifulSoup
 
-
+# %%
 #url
 URL = "https://www.fernuni-hagen.de/wirtschaftswissenschaft/studium/" \
       "klausurstatistik.shtml"
@@ -25,8 +25,8 @@ buttons = re.findall(r'id="button_10_4_0_\d+', str(soup))
 #print(len(buttons))
 
 klausurdaten = pd.DataFrame() # muss durch die for loop gefüllt werden
-#print(klausurdaten)
-
+print(klausurdaten)
+# %%
 for button in np.arange(len(buttons)):
     daten = soup.find("section", {"aria-labelledby":f"button_10_4_0_{button}"})
     daten_str = str(daten)
@@ -164,8 +164,9 @@ for button in np.arange(len(buttons)):
     
     #print(klausurdaten)
     
+# %%
 #print(klausurdaten)
-
+ #%%
 # Trenne Semester von Jahr
 klausurdaten["Jahr"] = klausurdaten["Semester"].apply(lambda x: x[-4:])
 klausurdaten["Semester"] = klausurdaten["Semester"].str.replace(
@@ -181,5 +182,26 @@ klausurdaten.sort_values(["Modulnummer", "Jahr", "Semester"], inplace = True)
 klausurdaten["Semester"] = klausurdaten["Semester"] + klausurdaten["Jahr"]
 del klausurdaten ["Jahr"]
 
+
+#%%
 #print(klausurdaten)
-#klausurdaten.to_csv("klausurdaten.csv")
+#klausurdaten.to_csv("klausurdaten.csv", index=False)
+
+
+# %%
+
+def berechne_durchschnitt(x):
+    summen = [(i+1) * x[f"{j}"] for i, j in enumerate(klausurdaten.iloc[0][4:9].index)]
+    if x["Teilnehmer"] == 0:
+        durchschnitt = 0
+    else:
+        durchschnitt = sum(summen) / x["Teilnehmer"]
+    return durchschnitt
+    
+
+klausurdaten["durchschnittsnote"] = klausurdaten.apply(berechne_durchschnitt, axis = 1)
+
+#print(klausurdaten)
+
+
+# %%

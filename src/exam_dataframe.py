@@ -53,12 +53,15 @@ def build_dataframe(soup: "bs4.BeautifulSoup", buttons: "list") -> "pd.DataFrame
         modul_name_sonstiges.append('>Aus Datenschutzgründen entfallen bei weniger als'
                              + ' vier Teilnehmern die Angaben.<')
         modul_name_sonstiges_unique = pd.Series(modul_name_sonstiges).unique()
-        modul_name_sonstiges_unique = pd.Series(modul_name_sonstiges_unique).str.removeprefix(">")
-        modul_name_sonstiges_unique = pd.Series(modul_name_sonstiges_unique).str.removesuffix("<")
+        modul_name_sonstiges_unique = pd.Series([i.replace("\xad", "") for i in modul_name_sonstiges_unique])
+        modul_name_sonstiges_unique = modul_name_sonstiges_unique.str.removeprefix(">")
+        modul_name_sonstiges_unique = modul_name_sonstiges_unique.str.removesuffix("<")
 
         
         modulname = np.setdiff1d(modul_name_sonstiges_unique.unique(), 
-                                                       ["sehr gut", "gut", "befriedigend", "ausreichend", "nicht ausreichend", "Teilnehmer"])
+                                                       ["sehr gut", "gut", "befriedigend", "ausreichend", "nicht ausreichend", "Teilnehmer"
+                                                        , "Aus Datenschutzgründen entfallen bei weniger als vier Teilnehmern die Angaben."]
+                                                       , assume_unique=True)
         
 
         # Modulnummer

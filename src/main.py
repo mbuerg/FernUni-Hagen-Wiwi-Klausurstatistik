@@ -2,14 +2,15 @@ import pandas as pd
 
 import scraper
 import exam_dataframe
-import durchschnittsnote
+import exam_modifiers
 
 
 def main():
     soup, buttons = scraper.scrape()
     klausurdaten = exam_dataframe.build_dataframe(soup, buttons)
-    durchschnittsnote.berechne_durchschnittsnote(klausurdaten)
-    klausurdaten.to_csv("klausurdaten_test.csv", index=False)
+    exam_modifiers.berechne_durchschnittsnote(klausurdaten)
+    exam_modifiers.sort_by_semester(klausurdaten)
+    klausurdaten.to_csv("../data/klausurdaten.csv", index=False)
 
 
 if __name__ == "__main__":

@@ -4,39 +4,19 @@ import pandas as pd
 import numpy as np
 from bs4 import BeautifulSoup
 
-def extrahiere_teilnehmer(zahlen):
-            # extrahiert die Teilnehmerzahlen
-            teilnehmer = []
-            i = 0
-            while i <= (len(zahlen) - 6):
-                if zahlen.iloc[i+1] < 30000:
-                    teilnehmer.append(zahlen.iloc[i+1])
-                    i += 7
-                else:
-                    teilnehmer.append(0)
-                    i += 1
-            return teilnehmer
-        
-        
-        
-def extrahiere_note(zahlen, note):
-            # extrahiert die Anteile an sehr guten Noten
-            match note:
-                case "sehr gut":
-                    note = 2
-                case "gut":
-                    note = 3
-                case "befriedigend":
-                    note = 4
-                case "ausreichend":
-                    note = 5
-                case _:
-                    note = 6
-            return [zahlen[i] for i in np.arange(note, len(zahlen), 7)]
-        
-        
+def build_dataframe(soup: BeautifulSoup, buttons: list) -> pd.DataFrame:
+    """
+        Transformiert Geparsten HTML Code in einen pandas DataFrame.
 
-def build_dataframe(soup: "bs4.BeautifulSoup", buttons: "list") -> "pd.DataFrame":
+    Args:
+        soup (BeautifulSoup): Geparster HTML Code
+        buttons (list): Liste der Buttons
+
+    Returns:
+        pd.DataFrame: DataFrame mit Spalten Modulname- Nummer, Semester,
+        Teilnehmer, und den Noten 1 bis 5.
+    """
+    
     klausurdaten = pd.DataFrame()
     
     for button in np.arange(len(buttons)):
@@ -84,10 +64,10 @@ def build_dataframe(soup: "bs4.BeautifulSoup", buttons: "list") -> "pd.DataFrame
             else:
                 teilnehmer_noten_entpackt.append(teilnehmer_noten[i][6])
             
-        teilnehmer_noten_entpackt = pd.Series(teilnehmer_noten_entpackt).str.replace(".", "")
-        teilnehmer_noten_entpackt = teilnehmer_noten_entpackt.str.removeprefix(">")
-        teilnehmer_noten_entpackt = teilnehmer_noten_entpackt.str.removesuffix("<")
-        teilnehmer_noten_entpackt = teilnehmer_noten_entpackt.astype("int16")
+        teilnehmer_noten_entpackt = (pd.Series(teilnehmer_noten_entpackt).str.replace(".", "")
+                                     .str.removeprefix(">")
+                                     .str.removesuffix("<")
+                                     .astype("int16"))
 
         # konkrete Zahlen extrahieren
         teilnehmer = pd.Series(extrahiere_teilnehmer(teilnehmer_noten_entpackt))
@@ -126,4 +106,60 @@ def build_dataframe(soup: "bs4.BeautifulSoup", buttons: "list") -> "pd.DataFrame
     
     
     return klausurdaten
+
+
+
+def extrahiere_note(zahlen: pd.Series, note: str) -> list:
+    """
+        Filtert die Notenzahlen heraus.
+
+    Args:
+        zahlen (pd.Series): Modulnummer, Teilnehmer- und Notendaten.
+        note (str): sehr gut, gut etc
+
+    Returns:
+        list: Liste der Notenzahlen.
+    """
+    # extrahiert die Anteile an Noten
+    match note:
+        case "sehr gut":
+            note = 2
+        case "gut":
+            note = 3
+        case "befriedigend":
+            note = 4
+        case "ausreichend":
+            note = 5
+        case _:
+            note = 6
+    return [zahlen[i] for i in np.arange(note, len(zahlen), 7)]
+
+
+
+
+def extrahiere_teilnehmer(zahlen: pd.Series) -> list:
+    """
+        Filtert aus den Teilnehmer- und Notendaten die Teilnehmer
+        heraus. Dabei ist zu beachten, dass die Daten die
+        Struktur haben Modulnummer, Teilnehmer, dann 5 Notenarten.
+
+    Args:
+        zahlen (pd.Series): Modulnummer, Teilnehmer- und Notendaten.
+
+    Returns:
+        list: Liste der Teilnehmerzahlen.
+    """
+    
+    # Die letzten Teilnehmer sind das Ende der zahlen - 6.
+    # Modulnummern sind > 30000
+    teilnehmer = []
+    i = 0
+    while i <= (len(zahlen) - 6):
+        if zahlen.iloc[i+1] < 30000:
+            teilnehmer.append(zahlen.iloc[i+1])
+            i += 7
+        else:
+            teilnehmer.append(0)
+            i += 1
+    return teilnehmer
     

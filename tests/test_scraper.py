@@ -10,8 +10,7 @@ def test_url():
     
     response = requests.get(URL)
     
-    assert (response.status_code == 200
-    , f"URL is not reachable, status code: {response.status_code}")
+    assert response.status_code == 200, f"URL is not reachable, status code: {response.status_code}"
 
 
 

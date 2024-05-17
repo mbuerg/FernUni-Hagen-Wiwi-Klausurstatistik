@@ -32,7 +32,7 @@ def scrape() -> BeautifulSoup | list:
         soup = BeautifulSoup(page.content, "html.parser")
     except Exception as e:
         raise RuntimeError(f"Fehler beim Parsen der HTML: {e}")
-
+    
     try:
         # alle tables überhaupt. Tables sind die einzelnen Tabelle für ein Modul
         results = soup.find_all("table", class_ = "tabelle100")

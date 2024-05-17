@@ -21,18 +21,25 @@ def scrape() -> BeautifulSoup | list:
     URL = "https://www.fernuni-hagen.de/wirtschaftswissenschaft/studium/" \
         "klausurstatistik.shtml"
     
-    # page.content beinhaltet den html code
-    page = requests.get(URL)
-    # in soup verwandeln. Dadurch wird der html code geparsed
-    soup = BeautifulSoup(page.content, "html.parser")
+    try:
+        # page.content beinhaltet den html code
+        page = requests.get(URL)
+    except Exception as e:
+        raise RuntimeError(f"Netzwerkfehler: {e}")
     
+    try:
+        # in soup verwandeln. Dadurch wird der html code geparsed
+        soup = BeautifulSoup(page.content, "html.parser")
+    except Exception as e:
+        raise RuntimeError(f"Fehler beim Parsen der HTML: {e}")
 
-    # alle tables überhaupt. Tables sind die einzelnen Tabelle für ein Modul
-    results = soup.find_all("table", class_ = "tabelle100")
-    
-
-    # finde alle buttons, über die man iterieren kann!
-    # Buttons sind Buttons für Sommersemester 2023 etc zum Aufklappen.
-    buttons = re.findall(r'id="button_10_4_0_\d+', str(soup))
+    try:
+        # alle tables überhaupt. Tables sind die einzelnen Tabelle für ein Modul
+        results = soup.find_all("table", class_ = "tabelle100")
+        # finde alle buttons, über die man iterieren kann!
+        # Buttons sind Buttons für Sommersemester 2023 etc zum Aufklappen.
+        buttons = re.findall(r'id="button_10_4_0_\d+', str(soup))
+    except Exception as e:
+        raise RuntimeError(f"Fehler beim Extrahieren der Buttons: {e}")
     
     return soup, buttons

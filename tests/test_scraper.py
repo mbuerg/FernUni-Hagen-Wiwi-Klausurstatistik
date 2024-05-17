@@ -1,6 +1,18 @@
+import requests
 from bs4 import BeautifulSoup
 
 import src.scraper
+
+
+def test_url():
+    URL = "https://www.fernuni-hagen.de/wirtschaftswissenschaft/studium/" \
+        "klausurstatistik.shtml"
+    
+    response = requests.get(URL)
+    
+    assert (response.status_code == 200
+    , f"URL is not reachable, status code: {response.status_code}")
+
 
 
 def test_scrape_types():

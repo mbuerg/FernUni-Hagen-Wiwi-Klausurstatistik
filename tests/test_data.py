@@ -1,12 +1,12 @@
 """
     Dieses Testmodul soll testen welche Eigenschaften die Klausurdaten haben,
     nachdem main.py ausgeführt wurde.
-    Sollte es zu Probleme kommen, dass pytest den ABS_PATH in der .env nicht
+    Sollte es zu Probleme kommen, dass pytest den ABS_PATH_FINAL_DATA in der .env nicht
     erkennt, so kann man 
     
-    ABS_PATH="Pfad\\klausurdaten.csv" pytest tests/test_data.py::test_data_duplicates
+    ABS_PATH_FINAL_DATA="Pfad\\klausurdaten.csv" pytest tests/test_data.py::test_data_duplicates
     
-    in Bash zum Beispiel verwenden.
+    in Bash verwenden.
 """
 
 import os
@@ -35,4 +35,3 @@ def test_data_types():
     assert testdaten["ausreichend"].dtype ==  "int64", "ausreichend ist kein int64"
     assert testdaten["nicht ausreichend"].dtype ==  "int64", "nicht ausreichend ist kein int64"
     assert testdaten["Durchschnittsnote"].dtype ==  "float64", "Durchschnittsnote ist kein float64"
-

@@ -94,6 +94,19 @@ def fill_missing_semester(klausurdaten: pd.DataFrame, letztes_jahr: int) -> pd.D
 
 
 
+def fuege_studiengang_hinzu(klausurdaten: pd.DataFrame, studiengaenge: pd.DataFrame) -> pd.DataFrame:
+    
+    # Einige ältere Module sind nicht mehr in den Prüfungsordnungen vermerkt
+    # Vermutung: Bachelormodule ab 31... und Mastermodule ab 32...
+    # wenn unter 32... dann bachelor, sonst Master
+    klausurdaten_plus_studiengaenge = pd.merge(klausurdaten, studiengaenge, how="left", on="Modulnummer")
+    
+    leere_studiengaenge = klausurdaten_plus_studiengaenge[klausurdaten_plus_studiengaenge["Studiengang"].isnull()].index
+    klausurdaten_plus_studiengaenge.loc[leere_studiengaenge, "Studiengang"] = klausurdaten_plus_studiengaenge["Modulnummer"].map(lambda x: "Bachelor" if x < 32000 else "Master")
+    return klausurdaten_plus_studiengaenge
+
+
+
 
 def sort_by_semester(klausurdaten: pd.DataFrame) -> pd.DataFrame:
     """

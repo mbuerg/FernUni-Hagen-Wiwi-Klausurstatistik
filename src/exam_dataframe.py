@@ -104,7 +104,7 @@ def build_dataframe(soup: BeautifulSoup, buttons: list) -> pd.DataFrame:
         klausurdaten = pd.concat([klausurdaten, klausurdaten_ites_semester], 
                                 axis = 0, ignore_index = True)
     
-    
+    klausurdaten["Modulnummer"] = klausurdaten["Modulnummer"].astype("int64")
     return klausurdaten
 
 

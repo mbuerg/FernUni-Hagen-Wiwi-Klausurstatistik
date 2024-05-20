@@ -18,14 +18,13 @@ load_dotenv()
 
 
 def test_data_duplicates():
-    testdaten = pd.read_csv(os.getenv("ABS_PATH"))
+    testdaten = pd.read_csv(os.getenv("ABS_PATH_FINAL_DATA"))
     duplikate = testdaten.duplicated().sum()
     assert ~(duplikate > 0), f"Es gibt {duplikate} Duplikate"
 
 
-
 def test_data_types():
-    testdaten = pd.read_csv(os.getenv("ABS_PATH"))
+    testdaten = pd.read_csv(os.getenv("ABS_PATH_FINAL_DATA"))
     assert testdaten["Modulname"].dtype == "object", "Modulname ist kein object"
     assert testdaten["Modulnummer"].dtype ==  "int64", "Modulnummer ist kein int64"
     assert testdaten["Semester"].dtype ==  "object", "Semester ist kein object"

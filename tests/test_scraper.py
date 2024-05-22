@@ -4,7 +4,7 @@ from bs4 import BeautifulSoup
 import src.scraper
 
 
-def test_url():
+def test_url() -> None:
     URL = "https://www.fernuni-hagen.de/wirtschaftswissenschaft/studium/" \
         "klausurstatistik.shtml"
     
@@ -14,7 +14,7 @@ def test_url():
 
 
 
-def test_scrape_types():
+def test_scrape_types() -> None:
     a, b = src.scraper.scrape()
     assert isinstance(a, BeautifulSoup)
     assert isinstance(b, list)

@@ -9,7 +9,7 @@ findet man die Notenverteilungen der Wiwi Module.
 
 Um zu sehen wie die Verteilungen sind, muss man Semesterbuttons drücken und den Modulnamen bzw Modulnummer suchen. Interessiert man sich beispielsweise für die Entwicklung der Durchschnittsnote in einem Modul muss man umständlich viele Buttons aufklappen, mit Strg+F die Modulnummer suchen und sich die Noten notieren.
 
-Dieses Projekt soll diese Verteilungen in einem Dataframe zusammenfassen und im nächsten Schritt in Tableau Public visualisieren.
+Dieses Projekt soll diese Verteilungen in einem Dataframe zusammenfassen und im nächsten Schritt in Tableau Public visualisieren bzw in PowerBI (siehe entsprechende Datei)
 
 Tableau: https://public.tableau.com/app/profile/marcel.b.rgel/viz/FernUniHagenWiwi-Klausurstatstiken/Story1
 

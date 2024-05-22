@@ -18,7 +18,8 @@ def main():
     klausurdaten_filled_average_sortiert = exam_modifiers.sort_by_semester(klausurdaten_filled_average)
     klausurdaten_filled_average_sortiert_studiengaenge = exam_modifiers.fuege_studiengang_hinzu(klausurdaten_filled_average_sortiert
                                                                                                 , module_gesamt)
-    klausurdaten_filled_average_sortiert_studiengaenge.to_csv("../data/klausurdaten.csv", index=False)
+    klausurdaten_filled_average_sortiert_studiengaenge_semesteralias = exam_modifiers.aliasing_semester(klausurdaten_filled_average_sortiert_studiengaenge, 2023)
+    klausurdaten_filled_average_sortiert_studiengaenge_semesteralias.to_csv("../data/klausurdaten.csv", index=False)
 
 if __name__ == "__main__":
     main()

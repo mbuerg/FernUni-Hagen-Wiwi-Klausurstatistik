@@ -1,6 +1,42 @@
 import numpy as np
 import pandas as pd
 
+
+def aliasing_semester(klausurdaten: pd.DataFrame, letztes_jahr: int) -> pd.DataFrame:
+    # wird benötigt, um in powerbi die x Achse (Smester) sortieren zu können
+    
+    klausurdaten_alias = klausurdaten.copy()
+    
+    alle_semester = create_ideal_semester(letztes_jahr)
+    alle_semester_zaehler = pd.DataFrame({"Semester": alle_semester
+                                          , "Semesteralias": np.arange(len(alle_semester))})
+    
+    
+    # neue Funktion
+    alle_semester_zaehler["Jahr"] = alle_semester_zaehler["Semester"].apply(lambda x: x[-4:])
+    alle_semester_zaehler["Semester"] = alle_semester_zaehler["Semester"].str.replace(
+        r"Wintersemester \d{4}", "WS", regex = True)
+    alle_semester_zaehler["Semester"] = alle_semester_zaehler["Semester"].str.replace(
+        r"Sommersemester \d{4}", "SS", regex = True)
+    
+    
+    alle_semester_zaehler_sorted = alle_semester_zaehler.sort_values("Semesteralias", inplace = False)
+
+    # Semesterdaten wieder zusammenfügen
+    alle_semester_zaehler_sorted["Semester"] = alle_semester_zaehler_sorted["Semester"] + alle_semester_zaehler_sorted["Jahr"]
+    del alle_semester_zaehler_sorted["Jahr"]
+    
+    
+    
+    klausurdaten_alias_zaehler = pd.merge(klausurdaten_alias
+                                          , alle_semester_zaehler_sorted
+                                          , how="left"
+                                          , on="Semester")
+    
+    return klausurdaten_alias_zaehler
+    
+
+
 def berechne_durchschnittsnote(klausurdaten: pd.DataFrame) -> pd.DataFrame:
     """
         Berechnet die Durchschnittsnote für jedes Modul je Semester.
@@ -21,6 +57,12 @@ def berechne_durchschnittsnote(klausurdaten: pd.DataFrame) -> pd.DataFrame:
     return klausurdaten_durchschnitt
 
 
+def create_ideal_semester(letztes_jahr: int) -> list:
+    semester_ideal = []
+    for i in np.arange(2011, letztes_jahr+1):
+        for j in ["Sommersemester ", "Wintersemester "]:
+            semester_ideal.append(f"{j}{i}")
+    return semester_ideal
 
 
 def fill_missing_semester(klausurdaten: pd.DataFrame, letztes_jahr: int) -> pd.DataFrame:
@@ -40,10 +82,7 @@ def fill_missing_semester(klausurdaten: pd.DataFrame, letztes_jahr: int) -> pd.D
     # Identifiziere welche Semester in den Daten vorhanden sind und welche eigentlich
     # drin sein sollten. Bestimme dann die Differenz
     semester_vorhanden = klausurdaten["Semester"].unique()
-    semester_ideal = []
-    for i in np.arange(2011, letztes_jahr+1):
-        for j in ["Sommersemester ", "Wintersemester "]:
-            semester_ideal.append(f"{j}{i}")
+    semester_ideal = create_ideal_semester(letztes_jahr)
     
     semester_fehlend = np.setdiff1d(semester_ideal, semester_vorhanden, assume_unique=True)
     

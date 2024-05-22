@@ -23,3 +23,8 @@ def test_extract_modulenumbers_types() -> None:
     assert isinstance(bachelor, pd.DataFrame)
     assert isinstance(master, pd.DataFrame)
 
+
+def test_parse_modulenumbers_cases():
+    assert src.pdf_scraper.parse_modulenumbers("Some text\n12345\nmore text\n67890").equals(pd.Series(['12345', '67890']))
+    assert src.pdf_scraper.parse_modulenumbers("hallo welt!!").equals(pd.Series([]))
+    assert src.pdf_scraper.parse_modulenumbers("12345").equals(pd.Series([]))

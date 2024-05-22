@@ -18,5 +18,3 @@ def test_scrape_types() -> None:
     a, b = src.scraper.scrape()
     assert isinstance(a, BeautifulSoup)
     assert isinstance(b, list)
-
-

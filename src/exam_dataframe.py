@@ -18,14 +18,15 @@ def build_dataframe(soup: BeautifulSoup, buttons: list) -> pd.DataFrame:
     """
     
     klausurdaten = pd.DataFrame()
+    buttons = list(map(lambda x: x[4:], buttons))
     
-    for button in np.arange(len(buttons)):
-        daten = soup.find("section", {"aria-labelledby":f"button_10_4_0_{button}"})
+    for button in buttons:
+        daten = soup.find("section", {"aria-labelledby": button})
         daten_str = str(daten)
 
         
         # Semester
-        semester_soup = str(soup.find(id = f"button_10_4_0_{button}"))
+        semester_soup = str(soup.find(id = button))
         semester = re.search("[WS][a-z]+\s\d+|[WS][a-z]+\s\d+[/]\d+", semester_soup)[0]
         
         # Modulname + sonstiges, sonstiges = Teilnehmer, sehr gut etc
@@ -67,7 +68,7 @@ def build_dataframe(soup: BeautifulSoup, buttons: list) -> pd.DataFrame:
         teilnehmer_noten_entpackt = (pd.Series(teilnehmer_noten_entpackt).str.replace(".", "")
                                      .str.removeprefix(">")
                                      .str.removesuffix("<")
-                                     .astype("int16"))
+                                     .astype("int32"))
 
         # konkrete Zahlen extrahieren
         teilnehmer = pd.Series(extrahiere_teilnehmer(teilnehmer_noten_entpackt))
@@ -103,8 +104,8 @@ def build_dataframe(soup: BeautifulSoup, buttons: list) -> pd.DataFrame:
         
         klausurdaten = pd.concat([klausurdaten, klausurdaten_ites_semester], 
                                 axis = 0, ignore_index = True)
-    
-    klausurdaten["Modulnummer"] = klausurdaten["Modulnummer"].astype("int64")
+
+    klausurdaten["Modulnummer"] = klausurdaten["Modulnummer"].astype("int32")
     return klausurdaten
 
 

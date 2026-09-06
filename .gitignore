@@ -3,6 +3,11 @@ data/
 
 trash/
 
+dev.ipynb
+
+bachelor.pdf
+master.pdf
+
 src/klausurstatistik.py
 src/visualisierung.py
 src/Scraper.ipynb

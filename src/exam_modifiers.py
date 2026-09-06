@@ -2,41 +2,6 @@ import numpy as np
 import pandas as pd
 
 
-def aliasing_semester(klausurdaten: pd.DataFrame, letztes_jahr: int) -> pd.DataFrame:
-    # wird benötigt, um in powerbi die x Achse (Smester) sortieren zu können
-    
-    klausurdaten_alias = klausurdaten.copy()
-    
-    alle_semester = create_ideal_semester(letztes_jahr)
-    alle_semester_zaehler = pd.DataFrame({"Semester": alle_semester
-                                          , "Semesteralias": np.arange(len(alle_semester))})
-    
-    
-    # neue Funktion
-    alle_semester_zaehler["Jahr"] = alle_semester_zaehler["Semester"].apply(lambda x: x[-4:])
-    alle_semester_zaehler["Semester"] = alle_semester_zaehler["Semester"].str.replace(
-        r"Wintersemester \d{4}", "WS", regex = True)
-    alle_semester_zaehler["Semester"] = alle_semester_zaehler["Semester"].str.replace(
-        r"Sommersemester \d{4}", "SS", regex = True)
-    
-    
-    alle_semester_zaehler_sorted = alle_semester_zaehler.sort_values("Semesteralias", inplace = False)
-
-    # Semesterdaten wieder zusammenfügen
-    alle_semester_zaehler_sorted["Semester"] = alle_semester_zaehler_sorted["Semester"] + alle_semester_zaehler_sorted["Jahr"]
-    del alle_semester_zaehler_sorted["Jahr"]
-    
-    
-    
-    klausurdaten_alias_zaehler = pd.merge(klausurdaten_alias
-                                          , alle_semester_zaehler_sorted
-                                          , how="left"
-                                          , on="Semester")
-    
-    return klausurdaten_alias_zaehler
-    
-
-
 def berechne_durchschnittsnote(klausurdaten: pd.DataFrame) -> pd.DataFrame:
     """
         Berechnet die Durchschnittsnote für jedes Modul je Semester.
@@ -51,85 +16,10 @@ def berechne_durchschnittsnote(klausurdaten: pd.DataFrame) -> pd.DataFrame:
     """
     
     klausurdaten_durchschnitt = klausurdaten.copy()
-    klausurdaten_durchschnitt["Durchschnittsnote"] = klausurdaten_durchschnitt.iloc[:, 3:9].apply(lambda x: np.sum(x.iloc[1:6] * np.arange(1,6))/x.iloc[0], axis=1)
+    klausurdaten_durchschnitt["Durchschnittsnote"] = klausurdaten_durchschnitt.iloc[:, 3:9].apply(lambda x: np.sum(x.iloc[1:6] * np.arange(1,6))/x.iloc[0] if x.iloc[0] != 0 else 0, axis=1)
     klausurdaten_durchschnitt["Durchschnittsnote"] = np.round(klausurdaten_durchschnitt["Durchschnittsnote"], 4)
 
     return klausurdaten_durchschnitt
-
-
-def create_ideal_semester(letztes_jahr: int) -> list:
-    semester_ideal = []
-    for i in np.arange(2011, letztes_jahr+1):
-        for j in ["Sommersemester ", "Wintersemester "]:
-            semester_ideal.append(f"{j}{i}")
-    return semester_ideal
-
-
-def fill_missing_semester(klausurdaten: pd.DataFrame, letztes_jahr: int) -> pd.DataFrame:
-    """
-        Imputiert ein fehlendes Semester (s). Dabei werden die Teilnehnmer- und Notendaten
-        des Semesters s-1 und s+1 gemittelt und als Daten für s verwendet.
-
-    Args:
-        klausurdaten (pd.DataFrame): Ein DataFrame mit Modulname- Nummer, Semester,
-        Teilnehmer und Noten (1 bis 5) als Spalten. Noten in den Spalten 3 bis 8.
-        letztes_jahr (int): Das maximale Jahr, das möglich ist. Beispiel: Das höchste 
-        mögliche Semester ist Sommersemester 2024, dann wähle letztes_jahr = 2024.
-
-    Returns:
-        pd.DataFrame: klausurdaten mit fehlenden Semestern.
-    """
-    # Identifiziere welche Semester in den Daten vorhanden sind und welche eigentlich
-    # drin sein sollten. Bestimme dann die Differenz
-    semester_vorhanden = klausurdaten["Semester"].unique()
-    semester_ideal = create_ideal_semester(letztes_jahr)
-    
-    semester_fehlend = np.setdiff1d(semester_ideal, semester_vorhanden, assume_unique=True)
-    
-    # Für jedes fehlende Semester füge es ein und berechne den Durchschnitt des Semesters davor und danach
-    klausurdaten_filled = klausurdaten.copy()
-    for i, j in enumerate(semester_fehlend):
-        
-        # Finde die Semester vor und nach dem fehlenden Semester
-        semester_fehlend_index = semester_ideal.index(semester_fehlend[i])
-        semester_fehlend_vorher = semester_ideal[semester_fehlend_index-1]
-        semester_fehlend_nachher = semester_ideal[semester_fehlend_index+1]
-
-        # Finde die Module der Semester davor und danach
-        module_fehlend_vorher = klausurdaten_filled.query("Semester == @semester_fehlend_vorher")["Modulnummer"].unique()
-        module_fehlend_nachher = klausurdaten_filled.query("Semester == @semester_fehlend_nachher")["Modulnummer"].unique()
-
-        # Welche Module sind in dem Semester davor und danach verfügbar?
-        # Die müssen nicht unbedingt gleich sein.
-        module_fehlendes_semester = list(np.intersect1d(module_fehlend_vorher, module_fehlend_nachher, assume_unique=True))
-        
-        # Filterung der relevanten Daten
-        klausurdaten_gefiltert_vorher = (klausurdaten_filled
-        .query("Semester == @semester_fehlend_vorher & Modulnummer == @module_fehlendes_semester"))
-        klausurdaten_gefiltert_nachher = (klausurdaten_filled
-        .query("Semester == @semester_fehlend_nachher & Modulnummer == @module_fehlendes_semester"))
-
-        # Berechnung des Durchschnitts durch concat von den Daten davor und danach
-        # dann gruppieren, sodass Teilnehmer und jede Note gemittelt ist
-        # reset_index() zum Transformieren in einen DataFrame
-        klausurdaten_fehlendes_semester = (pd.concat([klausurdaten_gefiltert_vorher
-                                            , klausurdaten_gefiltert_nachher])
-                                    .groupby(["Modulname"
-                                                , "Modulnummer"])[["Teilnehmer"
-                                                            , "sehr gut"
-                                                            , "gut"
-                                                            , "befriedigend"
-                                                            , "ausreichend"
-                                                            , "nicht ausreichend"]]
-                                    .mean()
-                                    .reset_index())
-
-        klausurdaten_fehlendes_semester.insert(2, "Semester", j)
-
-        klausurdaten_filled = pd.concat([klausurdaten_filled, klausurdaten_fehlendes_semester]
-                                , ignore_index=True)
-    
-    return klausurdaten_filled
 
 
 
@@ -144,37 +34,43 @@ def fuege_studiengang_hinzu(klausurdaten: pd.DataFrame, studiengaenge: pd.DataFr
     klausurdaten_plus_studiengaenge.loc[leere_studiengaenge, "Studiengang"] = klausurdaten_plus_studiengaenge["Modulnummer"].map(lambda x: "Bachelor" if x < 32000 else "Master")
     return klausurdaten_plus_studiengaenge
 
-
-
-
-def sort_by_semester(klausurdaten: pd.DataFrame) -> pd.DataFrame:
-    """
-        Sortiert die klausurdaten und kürzt die Semesterschreibweise ab, sodass 
-        nach Modulnummer, Jahr und Semester sortiert ist.
-
-    Args:
-        klausurdaten (pd.DataFrame): Ein DataFrame mit Modulname- Nummer, Semester,
-        Teilnehmer und Noten (1 bis 5) als Spalten. Semesterdaten in ausgeschriebener
-        Weise gegeben, zB Sommersemester 2011 anstatt SS2011
-
-    Returns:
-        pd.DataFrame: Sortierte Klausurdaten.
-    """
     
-    klausurdaten_sortiert = klausurdaten.copy()
+def replace_semester(klausurdaten: pd.DataFrame) -> pd.DataFrame:
+    klausurdaten_replaced = klausurdaten.copy()
+    klausurdaten_replaced["Semester"] = klausurdaten_replaced["Semester"].str.replace("Sommersemester", "SS").str.replace("Wintersemester", "WS")
     
-    # Jahr extrahieren und Abkürzungen erstellen
-    klausurdaten_sortiert["Jahr"] = klausurdaten_sortiert["Semester"].apply(lambda x: x[-4:])
-    klausurdaten_sortiert["Semester"] = klausurdaten_sortiert["Semester"].str.replace(
-        r"Wintersemester \d{4}", "WS", regex = True)
-    klausurdaten_sortiert["Semester"] = klausurdaten_sortiert["Semester"].str.replace(
-        r"Sommersemester \d{4}", "SS", regex = True)
-
-    # dataframe sortieren
-    klausurdaten_sortiert.sort_values(["Modulnummer", "Jahr", "Semester"], inplace = True)
-
-    # Semesterdaten wieder zusammenfügen
-    klausurdaten_sortiert["Semester"] = klausurdaten_sortiert["Semester"] + klausurdaten_sortiert["Jahr"]
-    del klausurdaten_sortiert["Jahr"]
+    return klausurdaten_replaced
     
-    return klausurdaten_sortiert
+def time_proxy(klausurdaten: pd.DataFrame) -> pd.DataFrame:
+    klausurdaten_time = klausurdaten.copy()
+    
+    klausurdaten_time["Zeitpunkt"] = list(map(lambda x: pd.to_datetime(f"01.09.{x[3:]}", format="%d.%m.%Y") if x[:2] \
+    == "SS" else pd.to_datetime(f"01.03.{int(x[3:])+1}", format="%d.%m.%Y"), klausurdaten_time["Semester"]))
+    
+    return klausurdaten_time
+    
+def summarize_vor_nachklausur(klausurdaten: pd.DataFrame) -> pd.DataFrame:
+    klausurdaten_copy = klausurdaten.copy()
+    
+    klausurdaten_summarized = klausurdaten_copy.groupby(["Modulname", "Modulnummer", "Semester"]) \
+    .agg({"Teilnehmer": "sum", "sehr gut": "sum", "gut": "sum", "befriedigend": "sum", "ausreichend": "sum", "nicht ausreichend": "sum", "Zeitpunkt": "max"}) \
+    .reset_index()
+    
+    return klausurdaten_summarized
+    
+def sort_by_module(klausurdaten: pd.DataFrame) -> pd.DataFrame:
+    klausurdaten_copy = klausurdaten.copy()
+    return klausurdaten_copy.sort_values(by=["Zeitpunkt", "Semester"], ascending = [False, True])
+    
+def expand_wintersemester(klausurdaten: pd.DataFrame) -> pd.DataFrame:
+    klausurdaten_replaced = klausurdaten.copy()
+    klausurdaten_replaced.loc[klausurdaten_replaced["Semester"].str.startswith("WS"), "Semester"] \
+    = list(map(lambda x: f"{x}/{int(x[5:])+1}", klausurdaten_replaced[klausurdaten_replaced["Semester"].str.startswith("WS")]["Semester"]))
+    
+    return klausurdaten_replaced
+    
+def concatenate_module(klausurdaten: pd.DataFrame) -> pd.DataFrame:
+    klausurdaten_concate = klausurdaten.copy()
+    klausurdaten_concate["Modul"] = klausurdaten_concate["Modulnummer"].astype("str").str.cat(klausurdaten_concate["Modulname"], sep=" - ")
+    
+    return klausurdaten_concate

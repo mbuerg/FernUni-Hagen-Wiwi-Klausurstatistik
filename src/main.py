@@ -1,25 +1,25 @@
 import pandas as pd
 
-import scraper
-import exam_dataframe
-import exam_modifiers
-import pdf_scraper
+from scraper import extract_modulenumbers, concatenate_bachelor_and_master, scrape_web
+from exam_dataframe import build_dataframe
+from exam_modifiers import replace_semester, time_proxy, summarize_vor_nachklausur, expand_wintersemester, berechne_durchschnittsnote, fuege_studiengang_hinzu, concatenate_module
 
 
 def main():
-    soup, buttons = scraper.scrape()
-    bachelor_module = pdf_scraper.extract_modulenumbers("BACHELOR")
-    master_module = pdf_scraper.extract_modulenumbers("MASTER")
-    module_gesamt = pdf_scraper.concatenate_bachelor_and_master(bachelor_module, master_module)
-    klausurdaten = exam_dataframe.build_dataframe(soup, buttons)
-    klausurdaten_filled = exam_modifiers.fill_missing_semester(klausurdaten=klausurdaten
-                                                               , letztes_jahr= 2023)
-    klausurdaten_filled_average = exam_modifiers.berechne_durchschnittsnote(klausurdaten_filled)
-    klausurdaten_filled_average_sortiert = exam_modifiers.sort_by_semester(klausurdaten_filled_average)
-    klausurdaten_filled_average_sortiert_studiengaenge = exam_modifiers.fuege_studiengang_hinzu(klausurdaten_filled_average_sortiert
+    soup, buttons = scrape_web()
+    bachelor_module = extract_modulenumbers()
+    master_module = extract_modulenumbers(bachelor=False)
+    module_gesamt = concatenate_bachelor_and_master(bachelor_module, master_module)
+    klausurdaten = build_dataframe(soup, buttons)
+    klausurdaten_replaced = replace_semester(klausurdaten)
+    klausurdaten_replaced_time = time_proxy(klausurdaten_replaced)
+    klausurdaten_replaced_time_summarized = summarize_vor_nachklausur(klausurdaten_replaced_time)
+    klausurdaten_replaced_time_summarized_expanded = expand_wintersemester(klausurdaten_replaced_time_summarized)
+    klausurdaten_replaced_time_summarized_expanded_avg = berechne_durchschnittsnote(klausurdaten_replaced_time_summarized_expanded)
+    klausurdaten_replaced_time_summarized_expanded_avg_studiengang = fuege_studiengang_hinzu(klausurdaten_replaced_time_summarized_expanded_avg
                                                                                                 , module_gesamt)
-    klausurdaten_filled_average_sortiert_studiengaenge_semesteralias = exam_modifiers.aliasing_semester(klausurdaten_filled_average_sortiert_studiengaenge, 2023)
-    klausurdaten_filled_average_sortiert_studiengaenge_semesteralias.to_csv("../data/klausurdaten.csv", index=False)
+    klausurdaten_replaced_time_summarized_expanded_avg_studiengang_conc = concatenate_module(klausurdaten_replaced_time_summarized_expanded_avg_studiengang)
+    klausurdaten_replaced_time_summarized_expanded_avg_studiengang_conc.to_csv("../data/klausurdaten.csv", index=False)
 
 if __name__ == "__main__":
     main()

@@ -8,14 +8,26 @@ from pyprojroot import here
 from bs4 import BeautifulSoup
 
 def concatenate_bachelor_and_master(bachelor: pd.DataFrame, master: pd.DataFrame) -> pd.DataFrame:
+    """Fügt Bachelor- und Mastermodule zusammen
+    
+    Args:
+    bachelor: Spalte mit Modulnummer und konstante Spalte mit "Bachelor"
+    master: Spalte mit Modulnummer und konstante Spalte mit "Master"
+    
+    Returns:
+    Konkatenation von Bachelor- und Mastermodulen
+    
+    Raises:
+    
+    Examples:
+    concatenate_bachelor_and_master(bachelor_modules, master_modules)
+    
+    Note:
+    Bachelor- und Mastermodulen sind nicht disjunkt. Wenn Modul in beiden Studiengängen, dann wird es als bachelor gesetzt.
+    """
 
     alle_module = (pd.concat([bachelor, master])
                 .reset_index(drop=True))
-
-    # es gibt Module, die in Bachelor und Masterstudiengang absolviert werden können
-    # wenn in beiden, dann Bachelor
-    #doppelte_raus = alle_module[alle_module["Modulnummer"].isin(bachelor["Modulnummer"])]
-    #doppelte_raus["Studiengang"] = "Bachelor"
 
     alle_module_bereinigt = alle_module.sort_values(by=["Modulnummer", "Studiengang"]) \
         .drop_duplicates(subset=["Modulnummer"]).reset_index(drop=True)
@@ -25,6 +37,22 @@ def concatenate_bachelor_and_master(bachelor: pd.DataFrame, master: pd.DataFrame
 
 
 def extract_modulenumbers(bachelor: bool = True) -> pd.DataFrame:
+    """Findet Modulnummern und weist denen Bachelor/Master zu.
+    
+    Args:
+    bachelor: Gibt an, ob die Datei sich auf Bachelor (default) oder Master (False) bezieht
+    
+    Returns:
+    Modulnummern und Spalte, ob diese Bachelor oder Master sind
+    
+    Raises:
+    
+    Examples:
+    extract_modulenumbers(bachelor = False)
+    
+    Note:
+    TODO: Eventuell ROOT_DIR ändern und den User einen Pfas eingeben lassen
+    """
     ROOT_DIR = here()
     if not bachelor:
         reader = PdfReader(ROOT_DIR / "Modulnummern" / "master.pdf")
@@ -50,23 +78,30 @@ def extract_modulenumbers(bachelor: bool = True) -> pd.DataFrame:
 
 
 def parse_modulenumbers(text: str) -> pd.Series:
-
+    """Findet 5-stelligen Modulnummern in einem String 
+    """
     return pd.Series(re.findall("\n\\d{5}" , text)).str[1:]
 
 
 def scrape_web() -> BeautifulSoup | list:
-    """
-        Scraped die Seite der Wiwi Klausurstatistiken der FernUni Hagen.
-        Die Daten werden per request geholt, dann per soup geparsed
-        und alle buttons, sowie soup ausgegeben. Die Buttons sind 
-        im html code gerade die Buttons, die für die einzelnen Semester
-        stehen.
+    """Scraped die Seite der Wiwi Klausurstatistiken der FernUni Hagen und parsed Buttons und Tabellen
+    
     Args:
-        None
+    None
     
     Returns:
-        soup (BeautifulSoup): Geparseder HTML Code
-        buttons (list): Liste der Buttons im HTML Code
+    soup: Geparseder HTML Code
+    buttons: Liste der Buttons im HTML Code
+    
+    Raises:
+    RuntimeError: Falls request fehlschlägt oder falls parsen fehlschlägt
+    HTTPError: Falls client error oder server error
+    
+    Examples:
+    soup, buttons = scrape_web()
+    
+    Note:
+    TODO: Parsing auslagern
     """
     #url
     URL = "https://www.fernuni-hagen.de/wirtschaftswissenschaft/studium/" \
@@ -87,7 +122,7 @@ def scrape_web() -> BeautifulSoup | list:
         raise RuntimeError(f"Fehler beim Parsen der HTML: {e}")
     
     try:
-        # Tables sind die einzelnen Tabelle für ein Modul
+        # Tables sind die einzelnen Tabellen für ein Modul
         results = soup.find_all("table", class_ = "tabelle100")
         # Buttons sind Buttons für Sommersemester 2023 etc zum Aufklappen.
         buttons = re.findall(r'id="button_10_\d+_\d+_\d+', str(soup))

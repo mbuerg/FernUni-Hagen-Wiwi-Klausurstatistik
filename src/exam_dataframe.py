@@ -193,3 +193,6 @@ def unwrap_participants_grades(teilnehmer_noten: list) -> pd.Series:
                                      .astype("int32"))
                                      
     return teilnehmer_noten_entpackt
+    
+if __name__ == "__main__":
+    pass

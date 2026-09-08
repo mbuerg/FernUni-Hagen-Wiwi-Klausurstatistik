@@ -149,3 +149,6 @@ def extract_buttons(soup: bs4.BeautifulSoup) -> list[str]:
     buttons_stripped = list(map(lambda x: x[4:], buttons))
     
     return buttons_stripped
+    
+if __name__ == "__main__":
+    pass

@@ -168,3 +168,6 @@ def concatenate_module(klausurdaten: pd.DataFrame) -> pd.DataFrame:
     klausurdaten_concate["Modul"] = klausurdaten_concate["Modulnummer"].astype("str").str.cat(klausurdaten_concate["Modulname"], sep=" - ")
     
     return klausurdaten_concate
+
+if __name__ == "__main__":
+    pass

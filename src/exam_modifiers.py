@@ -3,16 +3,14 @@ import pandas as pd
 
 
 def berechne_durchschnittsnote(klausurdaten: pd.DataFrame) -> pd.DataFrame:
-    """
-        Berechnet die Durchschnittsnote für jedes Modul je Semester.
+    """Berechnet die Durchschnittsnote für jedes Modul je Semester.
 
     Args:
-        klausurdaten (pd.DataFrame): Ein DataFrame mit Modulname- Nummer, Semester,
-        Teilnehmer und Noten (1 bis 5) als Spalten. Noten in den Spalten 3 bis 8.
+    klausurdaten (pd.DataFrame): Ein DataFrame mit Modulname- Nummer, Semester,
+    Teilnehmer und Noten (1 bis 5) als Spalten. Noten in den Spalten 3 bis 8.
 
     Returns:
-        klausurdaten_durchschnitt (pd.DataFrame): klausurdaten mit neuer Spalte
-        Durchschnittsnote.
+    klausurdaten mit neuer Spalte Durchschnittsnot
         
     Raises:
     

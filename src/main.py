@@ -1,16 +1,17 @@
 import pandas as pd
 
-from scraper import extract_modulenumbers, concatenate_bachelor_and_master, scrape_web
-from exam_dataframe import build_dataframe
+from scraper import extract_modulenumbers, concatenate_bachelor_and_master, scrape_web, extract_buttons
+from exam_dataframe import extract_examdata
 from exam_modifiers import replace_semester, time_proxy, summarize_vor_nachklausur, expand_wintersemester, berechne_durchschnittsnote, fuege_studiengang_hinzu, concatenate_module
 
 
 def main():
-    soup, buttons = scrape_web()
+    soup = scrape_web()
+    buttons = extract_buttons(soup)
     bachelor_module = extract_modulenumbers()
     master_module = extract_modulenumbers(bachelor=False)
     module_gesamt = concatenate_bachelor_and_master(bachelor_module, master_module)
-    klausurdaten = build_dataframe(soup, buttons)
+    klausurdaten = extract_examdata(soup, buttons)
     klausurdaten_replaced = replace_semester(klausurdaten)
     klausurdaten_replaced_time = time_proxy(klausurdaten_replaced)
     klausurdaten_replaced_time_summarized = summarize_vor_nachklausur(klausurdaten_replaced_time)

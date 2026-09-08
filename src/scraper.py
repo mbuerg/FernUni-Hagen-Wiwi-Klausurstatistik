@@ -67,7 +67,7 @@ def extract_modulenumbers(bachelor: bool = True) -> pd.DataFrame:
         page = reader.pages[i]
         text = page.extract_text()
         module = (np.append(module
-                            , parse_modulenumbers(text))
+                            , parse_modulenumbers_pdf(text))
                         .astype("int64"))
     module_df = (pd.DataFrame({"Modulnummer": module})
                  .sort_values("Modulnummer")
@@ -77,13 +77,13 @@ def extract_modulenumbers(bachelor: bool = True) -> pd.DataFrame:
     return module_df
 
 
-def parse_modulenumbers(text: str) -> pd.Series:
+def parse_modulenumbers_pdf(text: str) -> pd.Series:
     """Findet 5-stelligen Modulnummern in einem String 
     """
     return pd.Series(re.findall("\n\\d{5}" , text)).str[1:]
 
 
-def scrape_web() -> BeautifulSoup | list:
+def scrape_web() -> bs4.BeautifulSoup:
     """Scraped die Seite der Wiwi Klausurstatistiken der FernUni Hagen und parsed Buttons und Tabellen
     
     Args:
@@ -94,21 +94,20 @@ def scrape_web() -> BeautifulSoup | list:
     buttons: Liste der Buttons im HTML Code
     
     Raises:
-    RuntimeError: Falls request fehlschlägt oder falls parsen fehlschlägt
+    RuntimeError: Falls beim Request oder parsen etwas schief geht, macht eine Fortsetzung des Programms keinen weiteren Sinn
     HTTPError: Falls client error oder server error
     
     Examples:
-    soup, buttons = scrape_web()
+    soup = scrape_web()
     
     Note:
     TODO: Parsing auslagern
     """
-    #url
+    
     URL = "https://www.fernuni-hagen.de/wirtschaftswissenschaft/studium/" \
         "klausurstatistik.shtml"
     
     try:
-        # page.content beinhaltet den html code
         page = requests.get(URL)
     except Exception as e:
         raise RuntimeError(f"Netzwerkfehler: {e}")
@@ -116,17 +115,37 @@ def scrape_web() -> BeautifulSoup | list:
     page.raise_for_status()
     
     try:
-        # html code parsen
         soup = BeautifulSoup(page.content, "html.parser")
     except Exception as e:
         raise RuntimeError(f"Fehler beim Parsen der HTML: {e}")
     
+    return soup
+    
+
+def extract_buttons(soup: bs4.BeautifulSoup) -> list[str]:
+    """Extrahiert die HTML-Buttons, die die Semester strukturieren
+    
+    Args:
+    html_page: 
+    
+    Returns:
+    Buttons auf der Seite der Klausurstatistiken
+    
+    Raises:
+    RuntimeError: Falls beim Extrahieren etwas schief geht, macht eine Fortsetzung des Programms keinen weiteren Sinn
+    
+    Examples:
+    
+    Note:
+    
+    """
+
     try:
-        # Tables sind die einzelnen Tabellen für ein Modul
         results = soup.find_all("table", class_ = "tabelle100")
-        # Buttons sind Buttons für Sommersemester 2023 etc zum Aufklappen.
         buttons = re.findall(r'id="button_10_\d+_\d+_\d+', str(soup))
     except Exception as e:
         raise RuntimeError(f"Fehler beim Extrahieren der Buttons: {e}")
+        
+    buttons_stripped = list(map(lambda x: x[4:], buttons))
     
-    return soup, buttons
+    return buttons_stripped

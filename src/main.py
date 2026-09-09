@@ -8,11 +8,6 @@ from logger import setup_logging
 
 
 def main():
-    setup_logging()
-
-    logger = logging.getLogger(__name__)
-    logger.info("----Programmstart----")
-    
     soup = scrape_web()
     buttons = extract_buttons(soup)
     bachelor_module = extract_modulenumbers()
@@ -28,8 +23,13 @@ def main():
                                                                                                 , module_gesamt)
     klausurdaten_replaced_time_summarized_expanded_avg_studiengang_conc = concatenate_module(klausurdaten_replaced_time_summarized_expanded_avg_studiengang)
     klausurdaten_replaced_time_summarized_expanded_avg_studiengang_conc.to_csv("../data/klausurdaten.csv", index=False)
-
-    logger.info("----Programm erfolgreich beendet----")
     
 if __name__ == "__main__":
+    setup_logging()
+
+    logger = logging.getLogger(__name__)
+    logger.info("----Programmstart----")
+    
     main()
+    
+    logger.info("----Programm erfolgreich beendet----")

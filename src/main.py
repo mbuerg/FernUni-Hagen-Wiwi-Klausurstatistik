@@ -1,11 +1,18 @@
 import pandas as pd
+import logging
 
 from scraper import extract_modulenumbers, concatenate_bachelor_and_master, scrape_web, extract_buttons
 from exam_dataframe import extract_examdata
 from exam_modifiers import replace_semester, time_proxy, summarize_vor_nachklausur, expand_wintersemester, berechne_durchschnittsnote, fuege_studiengang_hinzu, concatenate_module
+from logger import setup_logging
 
 
 def main():
+    setup_logging()
+
+    logger = logging.getLogger(__name__)
+    logger.info("----Programmstart----")
+    
     soup = scrape_web()
     buttons = extract_buttons(soup)
     bachelor_module = extract_modulenumbers()
@@ -22,5 +29,7 @@ def main():
     klausurdaten_replaced_time_summarized_expanded_avg_studiengang_conc = concatenate_module(klausurdaten_replaced_time_summarized_expanded_avg_studiengang)
     klausurdaten_replaced_time_summarized_expanded_avg_studiengang_conc.to_csv("../data/klausurdaten.csv", index=False)
 
+    logger.info("----Programm erfolgreich beendet----")
+    
 if __name__ == "__main__":
     main()

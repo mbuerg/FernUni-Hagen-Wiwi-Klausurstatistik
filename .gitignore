@@ -1,6 +1,8 @@
 # eigenes
 data/
 
+logs/
+
 trash/
 
 dev.ipynb

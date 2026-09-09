@@ -39,24 +39,17 @@ def extract_examdata(soup: bs4.BeautifulSoup, buttons: list) -> pd.DataFrame:
         teilnehmer_noten_entpackt = unwrap_participants_grades(teilnehmer_noten)
 
         teilnehmer_anzahl = pd.Series(extrahiere_teilnehmer(teilnehmer_noten_entpackt))
-        sehrgut_anzahl = pd.Series(extrahiere_note(teilnehmer_noten_entpackt, "sehr gut"))
-        gut_anzahl = pd.Series(extrahiere_note(teilnehmer_noten_entpackt, "gut"))
-        befriedigend_anzahl = pd.Series(extrahiere_note(teilnehmer_noten_entpackt, "befriedigend"))
-        ausreichend_anzahl = pd.Series(extrahiere_note(teilnehmer_noten_entpackt, "ausreichend"))
-        nicht_ausreichend_anzahl = pd.Series(extrahiere_note(teilnehmer_noten_entpackt, "nicht ausreichend"))
-        
         
         klausurdaten["Modulname"].append(modulnames)
         klausurdaten["Modulnummer"].append(modul_nr)
         klausurdaten["Semester"].append([semester]*len(modul_nr))
-        klausurdaten["Teilnehmer"].append(teilnehmer_anzahl)
-        klausurdaten["sehr gut"].append(sehrgut_anzahl)
-        klausurdaten["gut"].append(gut_anzahl)
-        klausurdaten["befriedigend"].append(befriedigend_anzahl)
-        klausurdaten["ausreichend"].append(ausreichend_anzahl)
-        klausurdaten["nicht ausreichend"].append(nicht_ausreichend_anzahl)
+        klausurdaten["Teilnehmer"].append(teilnehmer_anzahl)        
         
-    
+        for note in ["sehr gut", "gut", "befriedigend", "ausreichend", "nicht ausreichend"]:
+            note_anzahl = pd.Series(extrahiere_note(teilnehmer_noten_entpackt, note))
+            klausurdaten[note].append(note_anzahl)
+
+
     klausurdaten_flattened = {k: np.concatenate(v) for k, v in klausurdaten.items()}
     klausurdaten_df = pd.DataFrame(klausurdaten_flattened)
     klausurdaten_df["Modulnummer"] = klausurdaten_df["Modulnummer"].astype("int32")

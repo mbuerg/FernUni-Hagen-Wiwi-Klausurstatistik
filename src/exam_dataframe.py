@@ -74,9 +74,7 @@ def extrahiere_note(zahlen: pd.Series, note: str) -> list:
     Raises:
     
     Examples:
-    >>> zahlen = pd.Series([
-        31001,0,0,0,0,0,0,31011,50,5,15,20,5,5
-        ])
+    >>> zahlen = pd.Series([31001,0,0,0,0,0,0,31011,50,5,15,20,5,5])
     >>> extrahiere_note(zahlen, "sehr gut")
     [np.int64(0), np.int64(5)]
     
@@ -109,9 +107,7 @@ def extrahiere_teilnehmer(zahlen: pd.Series) -> list:
     Raises:
     
     Examples:
-    >>> zahlen = pd.Series([
-        31001,0,0,0,0,0,0,31011,50,5,15,20,5,5
-        ])
+    >>> zahlen = pd.Series([31001,0,0,0,0,0,0,31011,50,5,15,20,5,5])
     >>> extrahiere_teilnehmer(zahlen)
     [np.int64(0), np.int64(50)]
         

@@ -86,11 +86,14 @@ def parse_modulenumbers_pdf(text: str) -> pd.Series:
     Examples:
     >>> text='\n31721\n31751\n31771'
     >>> parse_modulenumbers_pdf(text)
-    [31721, 31751, 31771]
+    0    31721
+    1    31751
+    2    31771
+    dtype: str
     
     >>> text='abc456\n1234'
     >>> parse_modulenumbers_pdf(text)
-    []
+    Series([], dtype: object)
     
     Note:
     

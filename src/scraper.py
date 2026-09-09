@@ -4,11 +4,11 @@ import pandas as pd
 import numpy as np
 import requests
 from PyPDF2 import PdfReader
-from pyprojroot import here
 from bs4 import BeautifulSoup
 
+
 def concatenate_bachelor_and_master(bachelor: pd.DataFrame, master: pd.DataFrame) -> pd.DataFrame:
-    """Fügt Bachelor- und Mastermodule zusammen
+    """Fügt Bachelor- und Mastermodulnummern zusammen
     
     Args:
     bachelor: Spalte mit Modulnummer und konstante Spalte mit "Bachelor"
@@ -23,7 +23,7 @@ def concatenate_bachelor_and_master(bachelor: pd.DataFrame, master: pd.DataFrame
     concatenate_bachelor_and_master(bachelor_modules, master_modules)
     
     Note:
-    Bachelor- und Mastermodulen sind nicht disjunkt. Wenn Modul in beiden Studiengängen, dann wird es als bachelor gesetzt.
+    Bachelor- und Mastermodulen sind nicht disjunkt. Wenn Modul in beiden Studiengängen ist, dann wird es als Bachelor gesetzt.
     """
 
     alle_module = (pd.concat([bachelor, master])
@@ -36,11 +36,12 @@ def concatenate_bachelor_and_master(bachelor: pd.DataFrame, master: pd.DataFrame
 
 
 
-def extract_modulenumbers(bachelor: bool = True) -> pd.DataFrame:
+def extract_modulenumbers(path: str, studiengang: str) -> pd.DataFrame:
     """Findet Modulnummern und weist denen Bachelor/Master zu.
     
     Args:
-    bachelor: Gibt an, ob die Datei sich auf Bachelor (default) oder Master (False) bezieht
+    path: Pfad zu einer pdf mit den Modulnummern des Bachelor oder Master
+    studiengang: Bachelor oder Master
     
     Returns:
     Modulnummern und Spalte, ob diese Bachelor oder Master sind
@@ -51,15 +52,9 @@ def extract_modulenumbers(bachelor: bool = True) -> pd.DataFrame:
     extract_modulenumbers(bachelor = False)
     
     Note:
-    TODO: Eventuell ROOT_DIR ändern und den User einen Pfas eingeben lassen
     """
-    ROOT_DIR = here()
-    if not bachelor:
-        reader = PdfReader(ROOT_DIR / "Modulnummern" / "master.pdf")
-        studiengang = "Master"
-    else:
-        reader = PdfReader(ROOT_DIR / "Modulnummern" / "bachelor.pdf")
-        studiengang = "Bachelor"
+        
+    reader = PdfReader(path)
     number_of_pages = len(reader.pages)
     module = np.array([])
 
@@ -78,47 +73,54 @@ def extract_modulenumbers(bachelor: bool = True) -> pd.DataFrame:
 
 
 def parse_modulenumbers_pdf(text: str) -> pd.Series:
-    """Findet 5-stelligen Modulnummern in einem String 
+    r"""Findet 5-stelligen Modulnummern untereinander aufgelistet in einem String 
+    
+    Args:
+    text: Enthält zeilenweise Auflistung mit 5-stelligen Nummern
+    
+    Returns:
+    5-stellige Nummern
+    
+    Raises:
+    
+    Examples:
+    >>> text='\n31721\n31751\n31771'
+    >>> parse_modulenumbers_pdf(text)
+    [31721, 31751, 31771]
+    
+    >>> text='abc456\n1234'
+    >>> parse_modulenumbers_pdf(text)
+    []
+    
+    Note:
+    
     """
     return pd.Series(re.findall("\n\\d{5}" , text)).str[1:]
 
 
-def scrape_web() -> bs4.BeautifulSoup:
+def scrape_web(URL: str) -> bs4.BeautifulSoup:
     """Scraped die Seite der Wiwi Klausurstatistiken der FernUni Hagen und parsed Buttons und Tabellen
     
     Args:
-    None
+    URL: URL der Wiwi Klausurdaten der FernUni Hagen
     
     Returns:
     soup: Geparseder HTML Code
-    buttons: Liste der Buttons im HTML Code
     
     Raises:
-    RuntimeError: Falls beim Request oder parsen etwas schief geht, macht eine Fortsetzung des Programms keinen weiteren Sinn
-    HTTPError: Falls client error oder server error
+    RequestException: Falls beim Request  etwas schief geht, macht eine Fortsetzung des Programms keinen weiteren Sinn
     
     Examples:
-    soup = scrape_web()
+    soup = scrape_web('https://www.fernuni-hagen.de/wirtschaftswissenschaft/studium/klausurstatistik.shtml')
     
     Note:
-    TODO: Parsing auslagern
     """
     
-    URL = "https://www.fernuni-hagen.de/wirtschaftswissenschaft/studium/" \
-        "klausurstatistik.shtml"
-    
-    try:
-        page = requests.get(URL)
-    except Exception as e:
-        raise RuntimeError(f"Netzwerkfehler: {e}")
-        
+    page = requests.get(URL)
     page.raise_for_status()
     
-    try:
-        soup = BeautifulSoup(page.content, "html.parser")
-    except Exception as e:
-        raise RuntimeError(f"Fehler beim Parsen der HTML: {e}")
-    
+    soup = BeautifulSoup(page.content, "html.parser")
+
     return soup
     
 
@@ -140,11 +142,8 @@ def extract_buttons(soup: bs4.BeautifulSoup) -> list[str]:
     
     """
 
-    try:
-        results = soup.find_all("table", class_ = "tabelle100")
-        buttons = re.findall(r'id="button_10_\d+_\d+_\d+', str(soup))
-    except Exception as e:
-        raise RuntimeError(f"Fehler beim Extrahieren der Buttons: {e}")
+    results = soup.find_all("table", class_ = "tabelle100")
+    buttons = re.findall(r'id="button_10_\d+_\d+_\d+', str(soup))
         
     buttons_stripped = list(map(lambda x: x[4:], buttons))
     

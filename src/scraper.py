@@ -7,6 +7,10 @@ from PyPDF2 import PdfReader
 from bs4 import BeautifulSoup
 
 
+class NoButtonsException(Exception):
+    pass
+
+
 def concatenate_bachelor_and_master(bachelor: pd.DataFrame, master: pd.DataFrame) -> pd.DataFrame:
     """Fügt Bachelor- und Mastermodulnummern zusammen
     
@@ -62,8 +66,7 @@ def extract_modulenumbers(path: str, studiengang: str) -> pd.DataFrame:
         page = reader.pages[i]
         text = page.extract_text()
         module = (np.append(module
-                            , parse_modulenumbers_pdf(text))
-                        .astype("int64"))
+                            , parse_modulenumbers_pdf(text)).astype("int32"))
     module_df = (pd.DataFrame({"Modulnummer": module})
                  .sort_values("Modulnummer")
                  .reset_index(drop=True))
@@ -131,22 +134,25 @@ def extract_buttons(soup: bs4.BeautifulSoup) -> list[str]:
     """Extrahiert die HTML-Buttons, die die Semester strukturieren
     
     Args:
-    html_page: 
+    soup: HTML-Code der geparsten Seite
     
     Returns:
     Buttons auf der Seite der Klausurstatistiken
     
     Raises:
-    RuntimeError: Falls beim Extrahieren etwas schief geht, macht eine Fortsetzung des Programms keinen weiteren Sinn
+    NoButtonsException: Falls der HTML-Code keine Buttons enthält
     
     Examples:
+    >>> extract_buttons('id="button_10_0_0_0"')
+    ['button_10_0_0_0']
     
     Note:
     
     """
 
-    results = soup.find_all("table", class_ = "tabelle100")
     buttons = re.findall(r'id="button_10_\d+_\d+_\d+', str(soup))
+    if not buttons:
+        raise NoButtonsException("Es sind keine Buttons zu finden")
         
     buttons_stripped = list(map(lambda x: x[4:], buttons))
     

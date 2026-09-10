@@ -4,6 +4,7 @@ import pandas as pd
 from bs4 import BeautifulSoup
 
 from src.scraper import scrape_web, extract_modulenumbers, concatenate_bachelor_and_master, extract_buttons
+from src.scraper import NoButtonsException
 
 
 def test_scrape_web_wrong_url(mocker) -> None:
@@ -42,3 +43,10 @@ def test_extract_modulenumbers_wrong_path() -> None:
     
     with pytest.raises(FileNotFoundError):
         extract_modulenumbers(path, "Bachelor")
+
+
+def test_extract_buttons_no_buttons():
+    soup = "hello world!"
+    
+    with pytest.raises(NoButtonsException):
+        extract_buttons(soup = "hello world!")
